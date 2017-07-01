@@ -1,0 +1,164 @@
+<html>
+<head>
+<title>minimal demo</title>
+
+<!-- CSS goes here -->
+<style>
+body {
+  background-color: #FFF; /* example... */
+}
+</style>
+
+<!-- import convnetjs library -->
+<script src="nn.js"></script>
+
+</head>
+
+<div id="egdiv"></div>
+
+<img id="myImg" />
+<canvas id="myCanvas" width="980" height="420" ></canvas>
+
+<div id="trainingData">
+
+</div>
+
+<div id="testData">
+
+</div>
+
+<div id="neuralData">
+
+</div>
+<script type="text/javascript">
+var height = 28;
+var width = 28;
+var depth = 1;
+var trainData = [];
+var testData = [];
+
+var canvas = document.querySelector('#myCanvas');
+var img = document.querySelector('#myImg');
+
+var ctx = canvas.getContext('2d');
+
+var classes = [
+  [9,3,1,9,4,2,4,5,1,0,3,2,4,3,7,5,9,0,3,4,9,8,6,6,8,0,9,6,5,1,6,7,9,5,4],
+  [3,0,2,4,2,9,4,8,3,2,0,1,3,5,3,5,1,4,6,8,5,1,4,1,6,9,6,9,0,1,4,2,1,3,1],
+  [2,8,2,3,2,3,8,2,4,9,8,2,9,1,3,9,1,1,1,9,9,6,6,9,1,9,4,2,2,6,3,3,3,1,6],
+  [6,3,6,9,0,3,6,0,3,0,1,1,3,9,3,1,5,0,4,9,6,8,7,1,0,3,7,9,9,1,8,1,1,2,2],
+  [3,3,8,0,1,0,5,6,9,8,8,4,1,4,4,4,6,4,5,3,3,8,3,4,2,0,4,3,2,6,1,4,0,6,3],
+  [1,1,9,5,8,0,4,3,1,1,5,0,5,4,2,0,9,8,1,2,4,9,3,5,2,0,0,5,1,9,3,9,6,1,8],
+  [9,5,0,0,5,1,1,1,4,4,1,1,2,6,5,1,8,2,4,1,1,5,6,5,2,3,3,0,4,3,8,5,4,6,4],
+  [0,2,1,5,1,7,0,9,5,6,3,2,6,6,7,7,1,5,2,3,2,3,5,6,3,5,0,2,0,2,7,9,2,4,6],
+  [9,4,3,2,1,0,0,2,0,8,7,4,0,9,7,9,3,6,9,3,4,3,1,4,8,3,7,0,3,9,2,9,6,3,2],
+  [5,5,1,6,6,2,7,6,7,5,6,6,5,8,1,6,8,7,1,0,5,3,8,3,1,9,5,7,4,2,4,3,9,7,8],
+  [7,1,7,5,9,2,3,9,4,3,0,4,5,8,0,0,4,0,4,6,6,6,9,3,4,8,1,3,1,3,1,1,3,0,1],
+  [1,6,1,9,6,4,1,1,4,1,3,1,2,3,4,8,1,5,5,0,7,9,4,8,4,5,6,5,2,5,4,0,1,1,1],
+  [0,1,6,1,6,7,5,5,5,0,6,8,8,1,7,2,8,3,7,6,5,5,5,0,0,2,8,3,5,5,5,8,0,4,5],
+  [6,4,6,8,7,7,1,3,0,7,3,8,6,9,1,6,7,3,6,4,8,8,0,2,1,0,6,0,8,8,9,8,0,2,4],
+  [7,9,7,3,1,3,2,7,9,3,6,2,4,9,2,1,4,5,0,3,8,5,1,9,1,6,5,7,5,9,9,1,5,4,5],
+];
+
+
+img.src = '/imgs/mnist.png';
+img.onload = () => {
+  var i =0;
+  var j = 0;
+  var k = 0;
+  var rowLength = 35;
+  var rows = 15;
+  var length = rowLength * rows;
+  var r,g,b;
+  ctx.drawImage(img, 0, 0);
+
+  for (i = 0; i < rows; i += 1) {
+    for (j = 0; j < rowLength; j += 1){
+      var pixels = ctx.getImageData(j*width, i*height, width, height);
+      var canvs = document.createElement('canvas');
+      var colordata = pixels.data;
+      canvs.height = 28;
+      canvs.width = 28;
+      canvs.getContext('2d').putImageData(pixels, 0, 0);
+      document.querySelector('#trainingData').appendChild(canvs);
+      document.querySelector('#trainingData').appendChild(document.createTextNode(classes[i][j]));
+      var data = new Float64Array(width*height);
+      for(var k = 0; k < colordata.length; k = k+4) {
+        r = colordata[k];
+        g = colordata[k+1];
+        b = colordata[k+2];
+        //converting the pixel into grayscale
+        gray = r*0.2126 + g*0.7152 + b*0.0722;
+        data[k/4] = (gray/255) - 0.5;
+      }
+      var vol = new convnetjs.Vol(width, height, depth);
+      vol.w = data;
+      trainData.push({
+        x: vol,
+        className: classes[i][j],
+      });
+    }
+  }
+
+  for (i = rows; i < 15; i += 1) {
+    for (j = 0; j < rowLength; j += 1){
+      var pixels = ctx.getImageData(j*width, i*height, width, height);
+      var canvs = document.createElement('canvas');
+      var colordata = pixels.data;
+      canvs.height = 28;
+      canvs.width = 28;
+      canvs.getContext('2d').putImageData(pixels, 0, 0);
+      document.querySelector('#testData').appendChild(canvs);
+      var data = new Float64Array(width*height);
+      for(var k = 0; k < colordata.length; k = k+4) {
+        r = colordata[k];
+        g = colordata[k+1];
+        b = colordata[k+2];
+        //converting the pixel into grayscale
+        gray = r*0.2126 + g*0.7152 + b*0.0722;
+        data[k/4] = (gray/255)-0.5;
+      }
+      var vol = new convnetjs.Vol(width, height, depth);
+      vol.w = data;
+      testData.push({
+        x: vol,
+      });
+    }
+  }
+
+};
+
+
+
+var classesLength = 10;
+var layer_defs = [];
+// minimal network: a simple binary SVM classifer in 2-dimensional space
+layer_defs.push({type:'input', out_sx:width, out_sy:height, out_depth:depth});
+layer_defs.push({type:'conv', sx:5, filters:8, stride:1, pad:2, activation:'relu'});
+layer_defs.push({type:'pool', sx:2, stride:2});
+layer_defs.push({type:'conv', sx:5, filters:16, stride:1, pad:2, activation:'relu'});
+layer_defs.push({type:'pool', sx:3, stride:3});
+layer_defs.push({type:'svm', num_classes:classesLength});
+
+var net = new convnetjs.Net();
+net.makeLayers(layer_defs);
+
+var trainer = new convnetjs.SGDTrainer(net, {method:'adadelta', batch_size:20, l2_decay:0.001});
+
+trainData.forEach(td=> trainer.train(td.x, td.className));
+
+//
+// var i = 0;
+// for (i = 0; i < classesLength; i += 1){
+//   var canvs = document.createElement('canvas');
+//   canvs.height = 28;
+//   canvs.width = 28;
+//   canvs.getContext('2d').putImageData(new ImageData(Uint8ClampedArray.from(net.layers[1].filters[i].w.map(x => (x + 0.5)*255)),width, height), 0, 0);
+//   document.querySelector('#neuralData').appendChild(canvs);
+// }
+
+
+
+</script>
+</body>
+</html>
