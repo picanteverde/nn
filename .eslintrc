@@ -9,7 +9,7 @@
         "node": true,
         "mocha": true
     },
-    "extends": "airbnb",
+    "extends": "eslint:recommended",
     "parserOptions": {
         "ecmaFeatures": {
             "experimentalObjectRestSpread": true
