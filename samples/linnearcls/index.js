@@ -3,7 +3,7 @@ import nj from 'numjs';
 //linnear classifier 2d
 
 const scores = (W, x) => nj.dot(W, x);
-const Li = (S, c) =>
+const li = (S, c) =>
   S.reduce((acc, elm) =>
     acc + Math.max(0, S[c] - elm + 1) ,0
   ) - 1;
@@ -42,6 +42,7 @@ const Y = nj.array(Array.from(new Array(trainingSize), () => parseInt(Math.rando
 
 const S = scores(W,X);
 
-X0 = X.slice(null,[0,1]).toString();
+const margins = [];
+S.mapDimension(1, (Si,i) => margins[i] = li(Si.reshape(classes).tolist(), Y.get(i)));
 
-scores(W,X.slice(null,[0,1]).reshape(4));
+const data_loss = margins.reduce((acc, m)=> acc + m ,0) / trainingSize;
