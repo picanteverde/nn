@@ -2,26 +2,28 @@ import nj from 'numjs';
 
 //linnear classifier 2d
 
+
+
 const scores = (W, x) => nj.dot(W, x);
-const li = (S, c) =>
-  S.reduce((acc, elm) =>
-    acc + Math.max(0, S[c] - elm + 1) ,0
-  ) - 1;
+
 
 const trainingSize = 10;
 const classes = 4;
 const evidences = 4;
+const lambda = 0.1;
 
+const Ones = nj.ones([classes, evidences]);
+const Twos = Ones.add(Ones);
 
+const r = (W) => W.pow(Twos).sum();
 
 const W = nj.random([classes, evidences]);
 
-W.__proto__.map = function(fn){ return this.selection.data.map(fn);};
 W.__proto__.mapDimension = function(dimRemove, fn){
   const slice = [];
   const args = Array.from(new Array(this.shape.length), () => null);
   args[dimRemove] = slice;
-  for(var i =0; i < this.shape[dimRemove]; i += 1){
+  for(let i =0; i < this.shape[dimRemove]; i += 1){
     slice[0] = i;
     slice[1] = i + 1;
     fn(this.slice.apply(this,args), i);
@@ -42,7 +44,21 @@ const Y = nj.array(Array.from(new Array(trainingSize), () => parseInt(Math.rando
 
 const S = scores(W,X);
 
-const margins = [];
-S.mapDimension(1, (Si,i) => margins[i] = li(Si.reshape(classes).tolist(), Y.get(i)));
+const margins = nj.zeros([classes, trainingSize]);
 
-const data_loss = margins.reduce((acc, m)=> acc + m ,0) / trainingSize;
+S.mapDimension(1, (Si,i) => {
+  for(let j = 0; j < Si.size; j += 1){
+    margins.set(j, i, Math.max(0, Si.get(j,0) - Si.get(Y.get(i),0) + 1));
+  }
+  margins.set(Y.get(i),i, 0);
+});
+
+
+const Li = [];
+
+margins.mapDimension(1, (Mi,i) => Li[i] = Mi.sum() - 1);
+
+const data_loss = (Li.reduce((acc, m)=> acc + m ,0) / trainingSize) + lambda * r(W);
+
+
+margins.selection.data = margins.selection.data.map((e) => ((e > 0) ? 1 : 0));
