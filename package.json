@@ -33,6 +33,7 @@
     "eslint-plugin-import": "^2.7.0"
   },
   "scripts": {
-    "test": "babel-node ./test"
+    "test": "babel-node ./test",
+    "lint": "eslint src test"
   }
 }

@@ -1,8 +1,5 @@
 {
     "parser": "babel-eslint",
-    "globals": {
-      "__DEV__": true
-    },
     "env": {
         "commonjs": true,
         "es6": true,
@@ -17,13 +14,11 @@
         "sourceType": "module"
     },
     "plugins": [
-        "import",
         "babel"
     ],
     "settings": {
     },
     "rules": {
-        "generator-star-spacing": 0,
         "indent": [
             "error",
             2
@@ -42,6 +37,7 @@
         ],
         "new-cap": ["error", {"capIsNewExceptions": ["Map","List"]}],
         "no-param-reassign": 1,
+        "no-console": ["warn"],
         "import/no-extraneous-dependencies": 0,
         "import/no-unresolved": 0,
         "import/extensions": 0,
