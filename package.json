@@ -35,5 +35,8 @@
   "scripts": {
     "test": "babel-node ./test",
     "lint": "eslint src test"
+  },
+  "dependencies": {
+    "numjs": "^0.14.2"
   }
 }

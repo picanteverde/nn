@@ -51,12 +51,12 @@ export default {
           resolve(labels);
         });
       })
-    ])
-      .then(([pixelsData, labelsData]) => {
-        return pixelsData.map((pixels, index) => ({
-          pixels,
-          lable: labelsData[index]
-        }));
-      });
+    ]);
+    // .then(([pixelsData, labelsData]) => {
+    //   return pixelsData.map((pixels, index) => ({
+    //     pixels,
+    //     lable: labelsData[index]
+    //   }));
+    // });
   },
 };
