@@ -136,41 +136,40 @@ let X = genM(trainingSize, evidences, i => j => Math.random());
 
 let Y = genV(trainingSize, i => parseInt(Math.random() * classes, 10));
 
-let S, M, Yi, L, data_loss, dW;
+const grad = (W, X, Y, loss) => {
+  const S = dotM(W, X);
+  const gradFn = loss(S, Y);
+  return gradFn(X, W.length);
+};
 
+const loss = (S, Y) => {
+  let Yi;
+  const M = S.map((Si, i) => (Yi = Y[i], Si.map((s,j) => Yi === j ? 0: Math.max(0, s - Si[Y[i]] + 1))));
+  const L = M.map(Mi => sumRV(Mi));
 
-
-for (let i = 0; i < steps; i += 1){
-
-  S = dotM(W, X);
-
-  M = S.map((Si, i) => (Yi = Y[i], Si.map((s,j) => Yi === j ? 0: Math.max(0, s - Si[Y[i]] + 1))));
-
-
-  L = M.map(Mi => sumRV(Mi));
-
-  data_loss = (sumRV(L) / trainingSize) + lambda * r(W);
+  const data_loss = (sumRV(L) / S.length) + lambda * r(W);
 
   console.log('total loss:' + data_loss);
 
-  M = M.map(Mi => Mi.map(m => (m > 0 ? 1 : 0)));
+  const C = M.map(Mi => Mi.map(m => (m > 0 ? 1 : 0)));
+  return (X, classes) => {
+    let dW = genM(classes, X[0].length, i => j => 0);
+    C.map((Ci, i) =>
+      Ci.map((x, j)=>
+        (dW[j] = sumV(
+          dW[j],
+          j === Y[i] ?
+            mulVS(X[i], sumRV(C[i]) * -1):
+            mulVS(X[i], C[i][j])
+        ))
+      )
+    );
+    dW = mulMS(dW, 1/X.length);
+    return dW;
+  };
+};
 
-
-  let dW = genM(classes, evidences, i => j => 0);
-
-  M.map((Mi, i) =>
-    Mi.map((x, j)=>
-      (dW[j] = sumV(
-        dW[j],
-        j === Y[i] ?
-          mulVS(X[i], sumRV(M[i]) * -1):
-          mulVS(X[i], M[i][j])
-      ))
-    )
-  );
-
-
-  dW = mulMS(dW, 1/trainingSize);
-
+for (let i = 0; i < steps; i += 1){
+  dW = grad(W, X, Y, loss);
   W = sumM(W, mulMS(dW, -1 * learningRate));
 }
