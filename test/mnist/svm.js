@@ -11,29 +11,41 @@ import {
 } from '../../src/lib/gd';
 debugger; // eslint-disable-line
 
+import mnist from 'mnist';
+
 mnistDataLoaders.loadData(
   `${__dirname}/train-images-idx3-ubyte`,
   `${__dirname}/train-labels-idx1-ubyte`,
 ).then(([X, Y]) => {
 
-  let steps = 1000;
-  let learningRate = 0.03;
-  let minibatchQuantity = 10;
+  const set = mnist.set(8000, 2000);
+  X = set.training.map(t => t.input);
+  Y = set.training.map(t => t.output.indexOf(1));
+
+  let learningRate = 0.01;
+  let minibatchQuantity = 100;
   let minibatchSize = X.length /minibatchQuantity;
   let dW;
   let W = genM(10, X[0].length, i => j => Math.random());
 
+  setInterval(() => console.log(JSON.stringify(W)), 10000);
 
-  for (let i = 0; i < steps; i += 1){
-    // let from = Math.floor(i/steps*minibatchQuantity) * minibatchSize;
-    // let to = from + minibatchSize;
-    // let miniBatchX = X.slice(from, to);
-    // let miniBatchY = Y.slice(from, to);
-    dW = grad(W, X, Y, SVM_loss(Y, R1, 0.1));
+  let i = 0;
+  const run = () => {
+    let from = i * minibatchSize;
+    let to = from + minibatchSize;
+    let miniBatchX = X.slice(from, to);
+    let miniBatchY = Y.slice(from, to);
+    dW = grad(W, miniBatchX, miniBatchY, SVM_loss(miniBatchY, R1, 0.1));
     W = sumM(W, mulMS(dW, -1 * learningRate));
-  }
+    i += 1;
+    if (i >= minibatchQuantity) {
+      i = 0;
+    }
+  };
 
-  console.log(JSON.toString(W));
+  setInterval(run, 0);
+
   // mnistDataLoaders.loadData(
   //   `${__dirname}/t10k-images-idx3-ubyte`,
   //   `${__dirname}/t10k-labels-idx3-ubyte`,

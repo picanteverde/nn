@@ -22,7 +22,7 @@ export const SVM_loss = (Y, R, lambda) => (S, W) => {
   const M = S.map((Si, i) => (Yi = Y[i], Si.map((s,j) => Yi === j ? 0: Math.max(0, s - Si[Y[i]] + 1))));
   const L = M.map(Mi => sumRV(Mi));
 
-  const data_loss = (sumRV(L) / S.length) + lambda * R(W);
+  const data_loss = (sumRV(L) / S.length) ;
 
   console.log('total loss:' + data_loss);
 

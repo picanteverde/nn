@@ -37,6 +37,7 @@
     "lint": "eslint src test"
   },
   "dependencies": {
+    "mnist": "^1.0.5",
     "numjs": "^0.14.2"
   }
 }
